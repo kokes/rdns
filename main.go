@@ -16,10 +16,10 @@ import (
 )
 
 type RDNS struct {
-	Timestamp string `json:"timestamp"`
-	Name      net.IP `json:"name"`
-	Value     string `json:"value"`
-	Type      string `json:"type"`
+	// Timestamp string `json:"timestamp"`
+	Name  net.IP `json:"name"`
+	Value string `json:"value"`
+	// Type      string `json:"type"`
 }
 
 func main() {
