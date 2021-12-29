@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"compress/gzip"
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -62,15 +60,17 @@ func run() error {
 	for scanner.Scan() {
 		if err := json.Unmarshal(scanner.Bytes(), &record); err != nil {
 			return err
-		} else {
-			binary.Read(bytes.NewBuffer(record.Name.To4()), binary.BigEndian, &ipv4_int)
-
-			var suffix, _ = publicsuffix.PublicSuffix(record.Value)
-
-			no_tld := strings.TrimRight(record.Value, suffix)
-			dots := strings.Split(no_tld, ".")
-			fmt.Fprintln(writer, strconv.FormatUint(uint64(ipv4_int), 10)+","+dots[len(dots)-1])
 		}
+
+		ipv4 := record.Name.To4()
+		ipv4_int = (uint32(ipv4[0]) << 24) + (uint32(ipv4[1]) << 16) + (uint32(ipv4[2]) << 8) + (uint32(ipv4[3]))
+		// ipv4_int = (uint32(record.Name[12+0]) << 24) + (uint32(record.Name[12+1]) << 16) + (uint32(record.Name[12+2]) << 8) + (uint32(record.Name[12+3]))
+
+		var suffix, _ = publicsuffix.PublicSuffix(record.Value)
+
+		no_tld := strings.TrimRight(record.Value, suffix)
+		dots := strings.Split(no_tld, ".")
+		fmt.Fprintln(writer, strconv.FormatUint(uint64(ipv4_int), 10)+","+dots[len(dots)-1])
 	}
 	return nil
 }
