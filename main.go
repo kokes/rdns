@@ -9,7 +9,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -71,7 +70,7 @@ func run() error {
 		no_tld := strings.TrimRight(record.Value, suffix)
 		li := strings.LastIndex(no_tld, ".") // there's strings.Cut in go 1.18 (to be released in Feb 2022)
 		domain := no_tld[li+1:]
-		fmt.Fprintln(writer, strconv.FormatUint(uint64(ipv4_int), 10)+","+domain)
+		fmt.Fprintf(writer, "%v,%v\n", ipv4_int, domain)
 	}
 	return nil
 }
