@@ -54,13 +54,13 @@ func run() error {
 	scanner := bufio.NewScanner(reader)
 
 	// writer := bufio.NewWriterSize(os.Stdout, 4096)
-	writer := bufio.NewWriterSize(io.Discard, 4096)
+	writer := bufio.NewWriter(io.Discard)
 
 	var ipv4_int uint32
 	var record RDNS
 
 	for scanner.Scan() {
-		if err := json.Unmarshal([]byte(scanner.Text()), &record); err != nil {
+		if err := json.Unmarshal(scanner.Bytes(), &record); err != nil {
 			return err
 		} else {
 			binary.Read(bytes.NewBuffer(record.Name.To4()), binary.BigEndian, &ipv4_int)
