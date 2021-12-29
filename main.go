@@ -7,11 +7,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/globalsign/publicsuffix"
 )
@@ -24,32 +26,42 @@ type RDNS struct {
 }
 
 func main() {
-	if err := publicsuffix.Update(); err != nil {
-		panic(err.Error())
+	if err := run(); err != nil {
+		log.Fatal(err)
 	}
+}
+
+func run() error {
+	if err := publicsuffix.Update(); err != nil {
+		return err
+	}
+	t := time.Now()
+	defer func() {
+		fmt.Printf("non-suffix time: %v\n", time.Since(t))
+	}()
 
 	file, err := os.Open(os.Args[1])
-
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
+	defer file.Close()
 
 	reader, err := gzip.NewReader(file)
-
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 
 	scanner := bufio.NewScanner(reader)
 
-	writer := bufio.NewWriterSize(os.Stdout, 4096)
+	// writer := bufio.NewWriterSize(os.Stdout, 4096)
+	writer := bufio.NewWriterSize(io.Discard, 4096)
 
 	var ipv4_int uint32
 	var record RDNS
 
 	for scanner.Scan() {
 		if err := json.Unmarshal([]byte(scanner.Text()), &record); err != nil {
-			log.Fatal("Unable to parse: %w", err)
+			return err
 		} else {
 			binary.Read(bytes.NewBuffer(record.Name.To4()), binary.BigEndian, &ipv4_int)
 
@@ -60,4 +72,5 @@ func main() {
 			fmt.Fprintln(writer, strconv.FormatUint(uint64(ipv4_int), 10)+","+dots[len(dots)-1])
 		}
 	}
+	return nil
 }
