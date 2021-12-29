@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/globalsign/publicsuffix"
+	"golang.org/x/net/publicsuffix"
 )
 
 type RDNS struct {
@@ -29,9 +29,6 @@ func main() {
 }
 
 func run() error {
-	if err := publicsuffix.Update(); err != nil {
-		return err
-	}
 	t := time.Now()
 	defer func() {
 		fmt.Printf("non-suffix time: %v\n", time.Since(t))
@@ -67,7 +64,7 @@ func run() error {
 
 		var suffix, _ = publicsuffix.PublicSuffix(record.Value)
 
-		no_tld := strings.TrimRight(record.Value, suffix)
+		no_tld := strings.TrimRight(record.Value, "."+suffix)
 		li := strings.LastIndex(no_tld, ".") // there's strings.Cut in go 1.18 (to be released in Feb 2022)
 		domain := no_tld[li+1:]
 		fmt.Fprintf(writer, "%v,%v\n", ipv4_int, domain)
