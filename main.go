@@ -69,8 +69,9 @@ func run() error {
 		var suffix, _ = publicsuffix.PublicSuffix(record.Value)
 
 		no_tld := strings.TrimRight(record.Value, suffix)
-		dots := strings.Split(no_tld, ".")
-		fmt.Fprintln(writer, strconv.FormatUint(uint64(ipv4_int), 10)+","+dots[len(dots)-1])
+		li := strings.LastIndex(no_tld, ".") // there's strings.Cut in go 1.18 (to be released in Feb 2022)
+		domain := no_tld[li+1:]
+		fmt.Fprintln(writer, strconv.FormatUint(uint64(ipv4_int), 10)+","+domain)
 	}
 	return nil
 }
